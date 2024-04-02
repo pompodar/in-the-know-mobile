@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "nre-react-native",
+    "slug": "nre-react-native",
+    "version": "1.0.0",
+    "scheme": "your-app-scheme",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.poedgar.nrereactnative"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "273f8b11-c64b-4e0e-9f1a-76b2fe80dd5a"
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
