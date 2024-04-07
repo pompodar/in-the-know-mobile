@@ -30,25 +30,25 @@ export default function Home() {
     const [value, setValue] = useState(null);
     const [items, setItems] = useState([
         {
-            label: "на 3 букви",
-            value: "/construct-words?words=3",
+            label: "16",
+            value: "/16?words=3",
         },
-        { label: "на 4 букви", value: "/construct-words?words=4" },
-        { label: "за картинкою", value: "/construct-words-pic" },
+        { label: "20", value: "/20" },
+        // { label: "за картинкою", value: "/construct-words-pic" },
     ]);
 
     const [open2, setOpen2] = useState(false);
     const [value2, setValue2] = useState(null);
     const [items2, setItems2] = useState([
         {
-            label: "знайди букви",
-            value: "/alphabet",
+            label: "stable",
+            value: "/stable",
         },
         {
-            label: "знайди букви за картинкою",
-            value: "/alphabet-pic",
+            label: "alignSelf",
+            value: "/alignSelf",
         },
-        { label: "запам'ятай букви", value: "/memory-game" },
+        { label: "18", value: "/18" },
     ]);
 
 
@@ -60,7 +60,7 @@ export default function Home() {
                     headerTitleStyle: {
                         fontWeight: "bold",
                     },
-                    headerTitle: "Читусик",
+                    headerTitle: "In The Know",
                 }}
             />
             <ImageBackground
@@ -80,7 +80,7 @@ export default function Home() {
                 >
                     <DropDownPicker
                         open={open2}
-                        placeholder="Алфавіт"
+                        placeholder="Test It"
                         value={value2}
                         items={items2}
                         labelStyle={{
@@ -110,7 +110,7 @@ export default function Home() {
                     <View style={{ margin: 4 }} />
                     <DropDownPicker
                         open={open}
-                        placeholder="Склади слова"
+                        placeholder="Browse"
                         value={value}
                         items={items}
                         labelStyle={{

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ImageBackground, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
+import { Entypo } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 
 const apiUrl = "https://in-the-know.blobsandtrees.online/wp-json/wp/v2/posts";
 
@@ -75,7 +77,6 @@ const TestIt = () => {
                                             width: 80,
                                             height: 80,
                                             fontSize: 12,
-                                            padding: 30,
                                             display: "flex",
                                             fontWeight: "bold",
                                             alignItems: "center",
@@ -92,7 +93,14 @@ const TestIt = () => {
                                             borderRadius: 400,
                                         }}
                                     >
-                                        Go
+                                        <Entypo
+                                            style={{
+                                                alignSelf: "center",
+                                            }}
+                                            name="forward"
+                                            size={34}
+                                            color="white"
+                                        />
                                     </Text>
                                     <Text
                                         style={{
@@ -132,7 +140,6 @@ const TestIt = () => {
                                         fontWeight: "bold",
                                         fontSize: 12,
                                         display: "flex",
-                                        padding: 30,
                                         justifyContent: "center",
                                         alignItems: "center",
                                         backgroundColor: "aqua",
@@ -148,7 +155,11 @@ const TestIt = () => {
                                         borderRadius: 400,
                                     }}
                                 >
-                                    Answer
+                                    <Entypo
+                                        name="eye"
+                                        size={34}
+                                        color="white"
+                                    />
                                 </Text>
                             )}
                         </View>
@@ -167,8 +178,8 @@ const TestIt = () => {
             // }}
             source={require("../assets/background.jpg")}
             resizeMode="cover"
-            style={styles.container}
-        >
+        
+            style={styles.container}>
             <Stack.Screen
                 options={{
                     headerTintColor: "#fff",

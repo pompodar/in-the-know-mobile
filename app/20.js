@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ImageBackground, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
+import { Entypo } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 
 const apiUrl = "https://in-the-know.blobsandtrees.online/wp-json/wp/v2/posts";
 
@@ -70,12 +72,11 @@ const TestIt = () => {
                                         onPress={() => handleGoPress()}
                                         style={{
                                             color: "white",
-                                            padding: 8,
+                                            padding: 21,
                                             alignSelf: "center",
                                             width: 80,
                                             height: 80,
                                             fontSize: 12,
-                                            padding: 30,
                                             display: "flex",
                                             fontWeight: "bold",
                                             alignItems: "center",
@@ -92,7 +93,11 @@ const TestIt = () => {
                                             borderRadius: 400,
                                         }}
                                     >
-                                        Go
+                                        <Entypo
+                                            name="forward"
+                                            size={34}
+                                            color="white"
+                                        />
                                     </Text>
                                     <Text
                                         style={{
@@ -126,13 +131,12 @@ const TestIt = () => {
                                     onPress={() => handleSeeAnswerPress()}
                                     style={{
                                         color: "white",
-                                        padding: 8,
+                                        padding: 20,
                                         width: 80,
                                         height: 80,
                                         fontWeight: "bold",
                                         fontSize: 12,
                                         display: "flex",
-                                        padding: 30,
                                         justifyContent: "center",
                                         alignItems: "center",
                                         backgroundColor: "aqua",
@@ -148,7 +152,11 @@ const TestIt = () => {
                                         borderRadius: 400,
                                     }}
                                 >
-                                    Answer
+                                    <Entypo
+                                        name="eye"
+                                        size={34}
+                                        color="white"
+                                    />
                                 </Text>
                             )}
                         </View>

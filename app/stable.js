@@ -1,14 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ImageBackground, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
+import { Entypo } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 
 const apiUrl = "https://in-the-know.blobsandtrees.online/wp-json/wp/v2/posts";
+
+const imagesApiUrl =
+    "https://in-the-know.blobsandtrees.online/wp-json/wp/v2/media";
 
 const TestIt = () => {
     const [showAnswer, setShowAnswer] = useState(false);
 
     const [questions, setQuestions] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    const [randomImageIndex, setRandomImageIndex] = useState(0); // Add state for random image index
+
+    const [images, setImages] = useState([]); // Add state for random image index
+
+    fetch(imagesApiUrl)
+        .then((response) => response.json())
+        .then((data) => {
+            // Assuming data is an array of media items
+            const imageUrls = data.map((item) => ({ uri: item.source_url }));
+            setImages(imageUrls);
+            // Now you can use imageUrls to display the images in your React Native app
+        })
+        .catch((error) => {
+            console.error("Error fetching images:", error);
+        });
 
     useEffect(() => {
         fetch(apiUrl)
@@ -75,7 +96,6 @@ const TestIt = () => {
                                             width: 80,
                                             height: 80,
                                             fontSize: 12,
-                                            padding: 30,
                                             display: "flex",
                                             fontWeight: "bold",
                                             alignItems: "center",
@@ -92,7 +112,11 @@ const TestIt = () => {
                                             borderRadius: 400,
                                         }}
                                     >
-                                        Go
+                                        <Entypo
+                                            name="forward"
+                                            size={34}
+                                            color="white"
+                                        />
                                     </Text>
                                     <Text
                                         style={{
@@ -101,6 +125,7 @@ const TestIt = () => {
                                             marginTop: 6,
                                             display: "flex",
                                             alignItems: "center",
+                                            justifyContent: "center",
                                             fontWeight: "bold",
                                             justifyContent: "center",
                                             backgroundColor: "orange",
@@ -132,7 +157,6 @@ const TestIt = () => {
                                         fontWeight: "bold",
                                         fontSize: 12,
                                         display: "flex",
-                                        padding: 30,
                                         justifyContent: "center",
                                         alignItems: "center",
                                         backgroundColor: "aqua",
@@ -148,7 +172,11 @@ const TestIt = () => {
                                         borderRadius: 400,
                                     }}
                                 >
-                                    Answer
+                                    <Entypo
+                                        name="eye"
+                                        size={34}
+                                        color="white"
+                                    />
                                 </Text>
                             )}
                         </View>
@@ -160,12 +188,7 @@ const TestIt = () => {
 
     return (
         <ImageBackground
-            // style={{
-            //     width: "100%",
-            //     height: "100%",
-            //     justifyContent: "center",
-            // }}
-            source={require("../assets/background.jpg")}
+            source={images[randomImageIndex]}
             resizeMode="cover"
             style={styles.container}
         >
@@ -198,7 +221,7 @@ const styles = StyleSheet.create({
     },
     card: {
         width: 320,
-        height: "100%",
+        height: "auto",
         color: "white",
         justifyContent: "center",
         alignItems: "center",
