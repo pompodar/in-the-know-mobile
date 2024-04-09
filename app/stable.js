@@ -66,6 +66,12 @@ const TestIt = () => {
     const handleGoPress = () => {
         setCurrentIndex(currentIndex + 1);
 
+        randomIndex = Math.floor(Math.random() * questions.length);
+
+        setRandomImageIndex(randomIndex)
+
+        console.log(randomImageIndex);
+
         setShowAnswer(false);
     };
 
