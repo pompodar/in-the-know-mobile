@@ -19,12 +19,22 @@ const TestIt = () => {
 
     const [images, setImages] = useState([]); // Add state for random image index
 
+    const [media, setMedia] = useState([]); // Add state for random image index
+
+    const [answerImg, setAnswerImg] = useState(null); // Add state for random image index
+
+
     fetch(imagesApiUrl)
         .then((response) => response.json())
         .then((data) => {
             // Assuming data is an array of media items
             const imageUrls = data.map((item) => ({ uri: item.source_url }));
             setImages(imageUrls);
+
+            const pics = data.map((item) => ({ item }));
+
+            setMedia(pics);
+
             // Now you can use imageUrls to display the images in your React Native app
         })
         .catch((error) => {
@@ -70,13 +80,19 @@ const TestIt = () => {
 
         setRandomImageIndex(randomIndex)
 
-        console.log(randomImageIndex);
-
         setShowAnswer(false);
     };
 
     const handleSeeAnswerPress = () => {
+
+        for (let i = 0; i < media.length; i++) {
+            if (media[i].item.id == questions[currentIndex]?.featured_media) {
+                setAnswerImg(media[i].item.source_url);
+            }
+        }
+        
         setShowAnswer(true);
+
     };
 
     const renderCard = (letter, index) => {
@@ -194,7 +210,9 @@ const TestIt = () => {
 
     return (
         <ImageBackground
-            source={images[randomImageIndex]}
+            // source={images[randomImageIndex]}
+            source={!showAnswer ? images[randomImageIndex] : answerImg}
+
             resizeMode="cover"
             style={styles.container}
         >
