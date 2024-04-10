@@ -41,20 +41,37 @@ const TestIt = () => {
             console.error("Error fetching images:", error);
         });
 
+    // useEffect(() => {
+    //     fetch(apiUrl)
+    //         .then((response) => response.json())
+    //         .then((posts) => {
+    //             // Assuming posts is an array of questions
+    //             const filteredQuestions = posts.filter(
+    //                 (question) => question?.custom_fields?.custom_field1
+    //             );
+    //             setQuestions(shuffleArray(filteredQuestions));
+    //         })
+    //         .catch((error) => {
+    //             console.error(error);
+    //         });
+    // }, []); // empty dependency array ensures the effect runs only once on mount
+
     useEffect(() => {
-        fetch(apiUrl)
+        fetch("https://in-the-know.blobsandtrees.online/wp-json/custom/v1/question-posts")
             .then((response) => response.json())
             .then((posts) => {
-                // Assuming posts is an array of questions
+                //Assuming posts is an array of questions
                 const filteredQuestions = posts.filter(
-                    (question) => question?.custom_fields?.custom_field1
+                    (question) => question?.question
                 );
                 setQuestions(shuffleArray(filteredQuestions));
+
+                console.log(questions);
             })
             .catch((error) => {
                 console.error(error);
             });
-    }, []); // empty dependency array ensures the effect runs only once on mount
+    }, []); 
 
     const shuffleArray = (array) => {
         let currentIndex = array.length,
@@ -76,21 +93,17 @@ const TestIt = () => {
     const handleGoPress = () => {
         setCurrentIndex(currentIndex + 1);
 
-        randomIndex = Math.floor(Math.random() * questions.length);
+        randomIndex = Math.floor(Math.random() * images.length);
 
         setRandomImageIndex(randomIndex)
+
+        console.log(images[randomImageIndex]);
 
         setShowAnswer(false);
     };
 
     const handleSeeAnswerPress = () => {
 
-        for (let i = 0; i < media.length; i++) {
-            if (media[i].item.id == questions[currentIndex]?.featured_media) {
-                setAnswerImg(media[i].item.source_url);
-            }
-        }
-        
         setShowAnswer(true);
 
     };
@@ -102,8 +115,7 @@ const TestIt = () => {
                     <>
                         <Text style={styles.cardText}>
                             {
-                                questions[currentIndex]?.custom_fields
-                                    ?.custom_field1
+                                questions[currentIndex]?.question
                             }
                         </Text>
                         <View>
@@ -164,7 +176,7 @@ const TestIt = () => {
                                     >
                                         {
                                             questions[currentIndex]
-                                                ?.custom_fields?.custom_field2
+                                                ?.answer
                                         }
                                     </Text>
                                 </>
@@ -211,7 +223,7 @@ const TestIt = () => {
     return (
         <ImageBackground
             // source={images[randomImageIndex]}
-            source={!showAnswer ? images[randomImageIndex] : answerImg}
+            source={!showAnswer ? images[randomImageIndex] : questions[currentIndex]?.featured_media}
 
             resizeMode="cover"
             style={styles.container}
