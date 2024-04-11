@@ -4,8 +4,6 @@ import { Stack } from "expo-router";
 import { Entypo } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 
-const apiUrl = "https://in-the-know.blobsandtrees.online/wp-json/wp/v2/posts";
-
 const imagesApiUrl =
     "https://in-the-know.blobsandtrees.online/wp-json/wp/v2/media";
 
@@ -79,7 +77,15 @@ const TestIt = () => {
 
         setShowAnswer(false);
 
-        setNumberOfCurrentQuestion(() => numberOfCurrentQuestion + 1)
+        setNumberOfCurrentQuestion(() => numberOfCurrentQuestion + 1);
+
+        if (numberOfCurrentQuestion !== questions.length) {
+            return;
+        } else {
+            setNumberOfCurrentQuestion(1);
+
+            setCurrentIndex(0);
+        }
     };
 
     const handleSeeAnswerPress = () => {
