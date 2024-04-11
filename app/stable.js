@@ -19,9 +19,8 @@ const TestIt = () => {
 
     const [images, setImages] = useState([]); // Add state for random image index
 
-    const [media, setMedia] = useState([]); // Add state for random image index
+    const [numberOfCurrentQuestion, setNumberOfCurrentQuestion] = useState(1); // Add state for random image index
 
-    const [answerImg, setAnswerImg] = useState(null); // Add state for random image index
 
 
     fetch(imagesApiUrl)
@@ -31,30 +30,11 @@ const TestIt = () => {
             const imageUrls = data.map((item) => ({ uri: item.source_url }));
             setImages(imageUrls);
 
-            const pics = data.map((item) => ({ item }));
-
-            setMedia(pics);
-
             // Now you can use imageUrls to display the images in your React Native app
         })
         .catch((error) => {
             console.error("Error fetching images:", error);
         });
-
-    // useEffect(() => {
-    //     fetch(apiUrl)
-    //         .then((response) => response.json())
-    //         .then((posts) => {
-    //             // Assuming posts is an array of questions
-    //             const filteredQuestions = posts.filter(
-    //                 (question) => question?.custom_fields?.custom_field1
-    //             );
-    //             setQuestions(shuffleArray(filteredQuestions));
-    //         })
-    //         .catch((error) => {
-    //             console.error(error);
-    //         });
-    // }, []); // empty dependency array ensures the effect runs only once on mount
 
     useEffect(() => {
         fetch("https://in-the-know.blobsandtrees.online/wp-json/custom/v1/question-posts")
@@ -97,9 +77,9 @@ const TestIt = () => {
 
         setRandomImageIndex(randomIndex)
 
-        console.log(images[randomImageIndex]);
-
         setShowAnswer(false);
+
+        setNumberOfCurrentQuestion(() => numberOfCurrentQuestion + 1)
     };
 
     const handleSeeAnswerPress = () => {
@@ -213,6 +193,32 @@ const TestIt = () => {
                                     />
                                 </Text>
                             )}
+                            <Text
+                            style={{
+                                color: "white",
+                                padding: 8,
+                                width: 60,
+                                height: 60,
+                                fontWeight: "bold",
+                                fontSize: 12,
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                backgroundColor: "orange",
+                                shadowColor: "#000000",
+                                alignSelf: "center",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 10,
+                                },
+                                shadowOpacity: 0.17,
+                                shadowRadius: 3.05,
+                                elevation: 10,
+                                borderRadius: 400,
+                            }}
+                            >
+                                {questions.length > 0 ? numberOfCurrentQuestion + " / " + questions.length : ""}
+                            </Text>
                         </View>
                     </>
                 }
@@ -222,8 +228,7 @@ const TestIt = () => {
 
     return (
         <ImageBackground
-            // source={images[randomImageIndex]}
-            source={!showAnswer ? images[randomImageIndex] : questions[currentIndex]?.featured_media}
+            source={!showAnswer ? images[randomImageIndex] : questions[currentIndex]?.featured_media ? questions[currentIndex]?.featured_media : images[randomImageIndex]}
 
             resizeMode="cover"
             style={styles.container}
