@@ -1,299 +1,275 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ImageBackground, StyleSheet } from "react-native";
+import { View, Text, TextInput, ImageBackground, StyleSheet, TouchableOpacity } from "react-native";
 import { Stack } from "expo-router";
-import { Entypo } from "@expo/vector-icons";
-import { AntDesign } from "@expo/vector-icons";
+import { Entypo, AntDesign, FontAwesome } from "@expo/vector-icons";
 
-const imagesApiUrl =
-    "https://in-the-know.blobsandtrees.online/wp-json/wp/v2/media";
+const imagesApiUrl = "https://in-the-know.blobsandtrees.online/wp-json/wp/v2/media";
+const questionsApiUrl = "https://in-the-know.blobsandtrees.online/wp-json/custom/v1/question-posts";
+const updateRepeatedApiUrl = "https://in-the-know.blobsandtrees.online/wp-json/custom/v1/update-repeated/";
+const updateQuestionApiUrl = "https://in-the-know.blobsandtrees.online/wp-json/custom/v1/update-question/";
 
 const TestIt = () => {
     const [showAnswer, setShowAnswer] = useState(false);
-
     const [questions, setQuestions] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [randomImageIndex, setRandomImageIndex] = useState(0);
+    const [images, setImages] = useState([]);
+    const [numberOfCurrentQuestion, setNumberOfCurrentQuestion] = useState(1);
+    const [notice, setNotice] = useState("");
+    const [questionInput, setQuestionInput] = useState("");
+    const [answerInput, setAnswerInput] = useState("");
+    const [displayQuestionInput, setDisplayQuestionInput] = useState(false);
+    const [displayAnswerInput, setDisplayAnswerInput] = useState(false);
 
-    const [randomImageIndex, setRandomImageIndex] = useState(0); // Add state for random image index
-
-    const [images, setImages] = useState([]); // Add state for random image index
-
-    const [numberOfCurrentQuestion, setNumberOfCurrentQuestion] = useState(1); // Add state for random image index
-
-
-
-    fetch(imagesApiUrl)
-        .then((response) => response.json())
-        .then((data) => {
-            // Assuming data is an array of media items
-            const imageUrls = data.map((item) => ({ uri: item.source_url }));
-            setImages(imageUrls);
-
-            // Now you can use imageUrls to display the images in your React Native app
-        })
-        .catch((error) => {
-            console.error("Error fetching images:", error);
-        });
 
     useEffect(() => {
-        fetch("https://in-the-know.blobsandtrees.online/wp-json/custom/v1/question-posts")
+        fetch(imagesApiUrl)
+            .then((response) => response.json())
+            .then((data) => {
+                const imageUrls = data.map((item) => ({ uri: item.source_url }));
+                setImages(imageUrls);
+            })
+            .catch((error) => console.error("Error fetching images:", error));
+        
+        fetch(questionsApiUrl)
             .then((response) => response.json())
             .then((posts) => {
-                //Assuming posts is an array of questions
-                const filteredQuestions = posts.filter(
-                    (question) => question?.question
-                );
-                setQuestions(shuffleArray(filteredQuestions));
-
-                console.log(questions);
+                const filteredQuestions = posts.filter((question) => question?.question);
+                const sortedQuestions = sortQuestionsByRepeated(filteredQuestions);
+                setQuestions(shuffleArray(sortedQuestions));
             })
-            .catch((error) => {
-                console.error(error);
-            });
-    }, []); 
+            .catch((error) => console.error(error));
+    }, []);
+
+    const sortQuestionsByRepeated = (questions) => {
+        const minRepeat = Math.min(...questions.map((question) => Number(question.repeated)));
+        const maxRepeat = Math.max(...questions.map((question) => Number(question.repeated)));
+        const thresholds = Array.from({ length: maxRepeat - minRepeat + 1 }, (_, i) => i + minRepeat);
+
+        console.log(minRepeat, maxRepeat, thresholds);
+    
+        const groupedQuestions = thresholds.map((threshold) =>
+          questions.filter((question) => (Number(question.repeated) || 0) === threshold)
+        );
+    
+        return groupedQuestions.flat();
+      };
 
     const shuffleArray = (array) => {
-        let currentIndex = array.length,
-            temporaryValue,
-            randomIndex;
-
+        let currentIndex = array.length, temporaryValue, randomIndex;
         while (0 !== currentIndex) {
             randomIndex = Math.floor(Math.random() * currentIndex);
             currentIndex -= 1;
-
             temporaryValue = array[currentIndex];
             array[currentIndex] = array[randomIndex];
             array[randomIndex] = temporaryValue;
         }
-
         return array;
     };
 
     const handleGoPress = () => {
-        setCurrentIndex(currentIndex + 1);
-
-        randomIndex = Math.floor(Math.random() * images.length);
-
-        setRandomImageIndex(randomIndex)
-
-        setShowAnswer(false);
-
-        setNumberOfCurrentQuestion(() => numberOfCurrentQuestion + 1);
-
-        if (numberOfCurrentQuestion !== questions.length) {
-            return;
+        setNotice("");
+        if (currentIndex + 1 < questions.length) {
+            setCurrentIndex(currentIndex + 1);
+            setRandomImageIndex(Math.floor(Math.random() * images.length));
+            setNumberOfCurrentQuestion(numberOfCurrentQuestion + 1);
+            setShowAnswer(false);
         } else {
-            setNumberOfCurrentQuestion(1);
-
             setCurrentIndex(0);
+            setNumberOfCurrentQuestion(1);
+        }
+
+        setDisplayQuestionInput(false);
+        setDisplayAnswerInput(false);
+    };
+
+    const handleSeeAnswerPress = async () => {
+        setNotice("");
+        setShowAnswer(true);
+        const updatedRepeated = (Number(questions[currentIndex].repeated) || 0) + 1;
+        questions[currentIndex].repeated = updatedRepeated;
+        try {
+            await fetch(updateRepeatedApiUrl + questions[currentIndex].id, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ new_repeated: updatedRepeated })
+            });
+
+            setDisplayQuestionInput(false);
+            setDisplayAnswerInput(false);
+        } catch (error) {
+            console.error("Error updating repeated count:", error);
         }
     };
 
-    const handleSeeAnswerPress = () => {
-
-        setShowAnswer(true);
-
+    const handleSavePress = async () => {
+        const updatedQuestion = questionInput || questions[currentIndex].question;
+        const updatedAnswer = answerInput || questions[currentIndex].answer;
+        try {
+            const response = await fetch(updateQuestionApiUrl + questions[currentIndex].id, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: updatedQuestion, answer: updatedAnswer })
+            });
+            if (!response.ok) throw new Error('Failed to update question');
+            setNotice("Question updated successfully!");
+            questions[currentIndex].question = updatedQuestion;
+            questions[currentIndex].answer = updatedAnswer;
+            setQuestionInput("");
+            setAnswerInput("");
+        } catch (error) {
+            console.error("Error updating question:", error);
+            setNotice("Error updating question!");
+        }
     };
 
-    const renderCard = (letter, index) => {
+    const renderCard = () => {
         return (
-            <View style={[styles.card]}>
-                {
-                    <>
+            <View style={styles.card}>
+                {!displayQuestionInput && 
+                    <TouchableOpacity onPress={() => setDisplayQuestionInput(true)}>
                         <Text style={styles.cardText}>
-                            {
-                                questions[currentIndex]?.question
-                            }
+                            {questionInput || questions[currentIndex]?.question}
                         </Text>
-                        <View>
-                            {showAnswer ? (
-                                <>
-                                    <Text
-                                        onPress={() => handleGoPress()}
-                                        style={{
-                                            color: "white",
-                                            padding: 8,
-                                            alignSelf: "center",
-                                            width: 80,
-                                            height: 80,
-                                            fontSize: 12,
-                                            display: "flex",
-                                            fontWeight: "bold",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            backgroundColor: "aqua",
-                                            shadowColor: "#000000",
-                                            shadowOffset: {
-                                                width: 0,
-                                                height: 10,
-                                            },
-                                            shadowOpacity: 0.17,
-                                            shadowRadius: 3.05,
-                                            elevation: 10,
-                                            borderRadius: 400,
-                                        }}
-                                    >
-                                        <Entypo
-                                            name="forward"
-                                            size={34}
-                                            color="white"
-                                        />
-                                    </Text>
-                                    <Text
-                                        style={{
-                                            color: "white",
-                                            padding: 8,
-                                            marginTop: 6,
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            fontWeight: "bold",
-                                            justifyContent: "center",
-                                            backgroundColor: "orange",
-                                            shadowColor: "#000000",
-                                            shadowOffset: {
-                                                width: 0,
-                                                height: 10,
-                                            },
-                                            shadowOpacity: 0.17,
-                                            shadowRadius: 3.05,
-                                            elevation: 10,
-                                            borderRadius: 4,
-                                        }}
-                                    >
-                                        {
-                                            questions[currentIndex]
-                                                ?.answer
-                                        }
-                                    </Text>
-                                </>
-                            ) : (
-                                <Text
-                                    onPress={() => handleSeeAnswerPress()}
-                                    style={{
-                                        color: "white",
-                                        padding: 8,
-                                        width: 80,
-                                        height: 80,
-                                        fontWeight: "bold",
-                                        fontSize: 12,
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        backgroundColor: "aqua",
-                                        shadowColor: "#000000",
-                                        alignSelf: "center",
-                                        shadowOffset: {
-                                            width: 0,
-                                            height: 10,
-                                        },
-                                        shadowOpacity: 0.17,
-                                        shadowRadius: 3.05,
-                                        elevation: 10,
-                                        borderRadius: 400,
-                                    }}
-                                >
-                                    <Entypo
-                                        name="eye"
-                                        size={34}
-                                        color="white"
-                                    />
-                                </Text>
-                            )}
-                            <Text
-                            style={{
-                                color: "white",
-                                padding: 8,
-                                width: 60,
-                                height: 60,
-                                fontWeight: "bold",
-                                fontSize: 12,
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                backgroundColor: "orange",
-                                shadowColor: "#000000",
-                                alignSelf: "center",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 10,
-                                },
-                                shadowOpacity: 0.17,
-                                shadowRadius: 3.05,
-                                elevation: 10,
-                                borderRadius: 400,
-                            }}
-                            >
-                                {questions.length > 0 ? numberOfCurrentQuestion + " / " + questions.length : ""}
-                            </Text>
-                        </View>
-                    </>
+                    </TouchableOpacity>
                 }
+                {displayQuestionInput && 
+                    <TextInput
+                    style={[styles.cardText, showAnswer ? styles.hidden : null]}
+                    value={questions[currentIndex]?.question}
+                    onChangeText={setQuestionInput}
+                    editable={!showAnswer}
+                    multiline
+                    />
+                }
+
+                {(showAnswer && !displayAnswerInput) && 
+                    <TouchableOpacity onPress={() => setDisplayAnswerInput(true)}>
+                        <hr></hr>
+                        <Text style={styles.cardText}>
+                            {questions[currentIndex]?.answer}
+                        </Text>
+                    </TouchableOpacity>
+                }
+                
+                {(showAnswer && displayAnswerInput) && (
+                    <>
+                        <TextInput
+                            style={styles.cardText}
+                            value={answerInput || questions[currentIndex]?.answer}
+                            onChangeText={setAnswerInput}
+                            multiline
+                        />
+                    </>
+                )}
+                <View style={styles.buttonContainer}>
+                    {showAnswer ? (
+                        <TouchableOpacity onPress={handleGoPress} style={styles.goButton}>
+                            <Entypo name="forward" size={34} color="white" />
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity onPress={handleSeeAnswerPress} style={styles.seeAnswerButton}>
+                            <Entypo name="eye" size={34} color="white" />
+                        </TouchableOpacity>
+                    )}
+                </View>
+                <Text style={styles.repeatedText}>
+                    repeated: {questions[currentIndex]?.repeated || 0}
+                </Text>
+                {(displayQuestionInput || displayAnswerInput) && 
+                    <TouchableOpacity onPress={handleSavePress} style={styles.saveButton}>
+                        <FontAwesome name="save" size={24} color="white" />
+                    </TouchableOpacity>
+                }
+                <Text style={styles.questionCount}>
+                    {numberOfCurrentQuestion} / {questions.length}
+                </Text>
+                {notice ? <Text style={styles.notice}>{notice}</Text> : null}
             </View>
         );
     };
 
     return (
         <ImageBackground
-            source={!showAnswer ? images[randomImageIndex] : questions[currentIndex]?.featured_media ? questions[currentIndex]?.featured_media : images[randomImageIndex]}
-
+            source={{ uri: images[randomImageIndex]?.uri }}
             resizeMode="cover"
             style={styles.container}
         >
             <Stack.Screen
                 options={{
                     headerTintColor: "#fff",
-                    headerTitleStyle: {
-                        fontWeight: "bold",
-                    },
+                    headerTitleStyle: { fontWeight: "bold" },
                     headerTitle: "Test it",
                 }}
             />
-            <View style={styles.grid}>{renderCard("A", 1)}</View>
+            <View style={styles.grid}>{renderCard()}</View>
         </ImageBackground>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
-    },
-    grid: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "center",
-        width: 300,
-    },
+    container: { flex: 1, justifyContent: "center", alignItems: "center" },
+    grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", width: 300 },
     card: {
         width: 320,
-        height: "auto",
         color: "white",
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#e91e63",
         margin: 5,
+        padding: 12,
         shadowColor: "#000000",
-        shadowOffset: {
-            width: 0,
-            height: 10,
-        },
+        shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.17,
         shadowRadius: 3.05,
         elevation: 10,
         borderRadius: 4,
     },
-    cardFlipped: {
-        backgroundColor: "white",
-    },
     cardText: {
-        fontSize: 20,
+        fontSize: 16,
         color: "white",
-        padding: 12,
-        fontSize: 14,
         fontWeight: "bold",
-        textIndent: 8,
+        textAlign: "center",
+    },
+    hidden: { display: 'none' },
+    repeatedText: { color: "white", marginTop: 10 },
+    saveButton: {
+        marginTop: 10,
+        padding: 8,
+        backgroundColor: "aqua",
+        borderRadius: 4,
+    },
+    buttonContainer: {
+        flexDirection: "row",
+        marginTop: 20,
+        justifyContent: "center",
+        width: "100%",
+    },
+    goButton: {
+        backgroundColor: "aqua",
+        padding: 8,
+        borderRadius: 400,
+        justifyContent: "center",
+        alignItems: "center",
+        alignSelf: "center",
+    },
+    seeAnswerButton: {
+        backgroundColor: "aqua",
+        padding: 8,
+        borderRadius: 400,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    questionCount: {
+        color: "white",
+        marginTop: 10,
+    },
+    notice: {
+        color: "white",
+        marginTop: 10,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        padding: 5,
+        borderRadius: 4,
     },
 });
 
