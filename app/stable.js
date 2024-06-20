@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, ImageBackground, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, ImageBackground, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { Stack } from "expo-router";
 import { Entypo, AntDesign, FontAwesome } from "@expo/vector-icons";
 
@@ -128,27 +128,30 @@ const TestIt = () => {
             <View style={styles.card}>
                 {!displayQuestionInput && 
                     <TouchableOpacity onPress={() => setDisplayQuestionInput(true)}>
-                        <Text style={styles.cardText}>
-                            {questionInput || questions[currentIndex]?.question}
-                        </Text>
+                        <ScrollView>
+                            <Text style={styles.cardText}>
+                                {questionInput || questions[currentIndex]?.question}
+                            </Text>
+                        </ScrollView>
                     </TouchableOpacity>
                 }
                 {displayQuestionInput && 
                     <TextInput
-                    style={[styles.cardText, showAnswer ? styles.hidden : null]}
-                    value={questions[currentIndex]?.question}
-                    onChangeText={setQuestionInput}
-                    editable={!showAnswer}
+                    style={styles.cardText}
+                    onChangeText={newText => setQuestionInput(newText)}
+                    value={questionInput || questions[currentIndex]?.question}
                     multiline
-                    />
+                />
                 }
 
                 {(showAnswer && !displayAnswerInput) && 
                     <TouchableOpacity onPress={() => setDisplayAnswerInput(true)}>
                         <hr></hr>
-                        <Text style={styles.cardText}>
-                            {questions[currentIndex]?.answer}
-                        </Text>
+                        <ScrollView>
+                            <Text style={styles.cardText}>
+                                {questionInput || questions[currentIndex]?.answer}
+                            </Text>
+                        </ScrollView>
                     </TouchableOpacity>
                 }
                 
@@ -156,8 +159,8 @@ const TestIt = () => {
                     <>
                         <TextInput
                             style={styles.cardText}
+                            onChangeText={newText => setAnswerInput(newText)}
                             value={answerInput || questions[currentIndex]?.answer}
-                            onChangeText={setAnswerInput}
                             multiline
                         />
                     </>
@@ -240,6 +243,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     buttonContainer: {
+        display: "flex",
         flexDirection: "row",
         marginTop: 20,
         justifyContent: "center",
